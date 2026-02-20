@@ -1,0 +1,1668 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Shield, Check, Smartphone, Zap, Users, BookOpen, Lock, Menu, X, 
+  ChevronDown, ChevronRight, Star, TrendingUp, Heart, Activity, Award, 
+  ArrowRight, Home, Plus, Settings, BarChart2, HelpCircle, FileText, 
+  AlertCircle, CheckCircle2, SlidersHorizontal, Bell, Filter, ChevronLeft, 
+  Share2, Lightbulb, DollarSign, Book, TriangleAlert, Wifi, Battery, Signal, 
+  Play, Clock, MessageSquare, Send, ToggleRight, Info, Timer, Smile, 
+  Calculator, User, Briefcase, Map, Wind, Calendar, Flag, Hourglass, 
+  Banknote, Brain, Linkedin, Instagram, Facebook
+} from 'lucide-react';
+
+/* --- 1. Basic Constants & Icons --- */
+
+const STORE_LINKS = {
+  apple: "https://www.apple.com/app-store/", 
+  google: "https://play.google.com/store"
+};
+
+const COLORS = {
+  bg: '#02030B', 
+  primaryGradFrom: '#47B5FF', 
+  primaryGradTo: '#A259FF',   
+  textMain: '#FFFFFF',
+  textMuted: '#B3BDD1',
+};
+
+const TikTokIcon = ({ size = 24, className = "" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
+       <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 1 0 1 7.6 6.83 6.83 0 0 0 4.46-6.47V9.32a9.69 9.69 0 0 0 3.77 1.48V6.69z"/>
+    </svg>
+);
+
+/* --- 2. Shared UI Components --- */
+
+const BrandLogo = ({ size = "text-xl", className = "" }) => (
+  <div className={`flex flex-col items-center justify-center leading-[0.85] font-black tracking-tighter text-white ${size} ${className} select-none`}
+       style={{ 
+         fontFamily: 'system-ui, -apple-system, sans-serif', 
+         textShadow: '0 0 10px rgba(168, 85, 247, 0.6), 0 0 20px rgba(168, 85, 247, 0.4), 0 0 30px rgba(168, 85, 247, 0.2)' 
+       }}>
+    <span className="block">BET</span>
+    <span className="block">LESS</span>
+  </div>
+);
+
+const GradientText = ({ children, className = "" }) => (
+  <span className={`bg-clip-text text-transparent bg-gradient-to-r from-[#47B5FF] to-[#A259FF] ${className}`}>
+    {children}
+  </span>
+);
+
+const Button = ({ children, variant = "primary", className = "", href, ...props }) => {
+  const baseStyle = "px-6 py-3 rounded-full font-medium transition-all duration-500 ease-out transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer no-underline";
+  const variants = {
+    primary: "bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA] text-white shadow-lg hover:shadow-[0_0_30px_rgba(139,92,246,0.4)] hover:-translate-y-0.5", 
+    secondary: "bg-white text-slate-900 hover:bg-slate-100",
+    outline: "border border-white/20 text-white hover:bg-white/10 backdrop-blur-md",
+    store: "bg-slate-900 border border-slate-700 text-white hover:bg-slate-800 flex items-center gap-3 px-5 py-2.5 rounded-xl transition-all hover:border-slate-500 hover:shadow-lg hover:-translate-y-0.5"
+  };
+  
+  if (href) {
+    return (
+      <a 
+        href={href} 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        className={`${baseStyle} ${variants[variant]} ${className}`} 
+        {...props}
+      >
+        {children}
+      </a>
+    );
+  }
+  
+  return (
+    <button className={`${baseStyle} ${variants[variant]} ${className}`} {...props}>
+      {children}
+    </button>
+  );
+};
+
+const Section = ({ id, className = "", children }) => (
+  <section id={id} className={`relative py-24 px-6 md:px-12 max-w-7xl mx-auto ${className}`}>
+    {children}
+  </section>
+);
+
+const PhoneFrame = ({ children, className = "", style = {} }) => (
+  <div 
+    className={`relative ${className}`}
+    style={{ ...style, aspectRatio: '9/19.5' }}
+  >
+    <div className="absolute inset-0 rounded-[3.5rem] shadow-2xl" style={{ boxShadow: '0 50px 100px -20px rgba(0, 0, 0, 0.7), 0 30px 60px -30px rgba(0,0,0,0.8)' }}></div>
+    <div 
+      className="absolute inset-0 rounded-[3.5rem] z-10"
+      style={{
+        background: 'linear-gradient(135deg, #e7cba8 0%, #c48e65 20%, #8a5a40 40%, #5c3a2a 60%, #3d2419 100%)',
+        padding: '2px', 
+        boxShadow: 'inset 0 0 4px rgba(255,255,255,0.25), inset 0 0 20px rgba(0,0,0,0.5)' 
+      }}
+    >
+        <div className="w-full h-full bg-[#2a1810] rounded-[3.4rem] p-[5px] relative shadow-inner">
+            <div className="absolute top-24 -left-[5px] w-[5px] h-7 bg-[#c48e65] rounded-l-[2px] shadow-sm border-r border-[#8a5a40]"></div>
+            <div className="absolute top-36 -left-[5px] w-[5px] h-14 bg-[#c48e65] rounded-l-[2px] shadow-sm border-r border-[#8a5a40]"></div>
+            <div className="absolute top-56 -left-[5px] w-[5px] h-14 bg-[#c48e65] rounded-l-[2px] shadow-sm border-r border-[#8a5a40]"></div>
+            <div className="absolute top-44 -right-[5px] w-[5px] h-24 bg-[#c48e65] rounded-r-[2px] shadow-sm border-l border-[#8a5a40]"></div>
+            <div className="absolute top-16 -left-[1px] w-[7px] h-[1.5px] bg-[#5c3a2a] opacity-50"></div>
+            <div className="absolute top-16 -right-[1px] w-[7px] h-[1.5px] bg-[#5c3a2a] opacity-50"></div>
+            <div className="absolute bottom-16 -left-[1px] w-[7px] h-[1.5px] bg-[#5c3a2a] opacity-50"></div>
+            <div className="absolute bottom-16 -right-[1px] w-[7px] h-[1.5px] bg-[#5c3a2a] opacity-50"></div>
+            <div className="w-full h-full bg-black rounded-[3.0rem] overflow-hidden relative border-[6px] border-black ring-1 ring-white/10">
+                <div className="absolute top-3 left-1/2 -translate-x-1/2 w-[30%] h-[34px] bg-black rounded-full z-50 flex items-center justify-between px-3 pointer-events-none">
+                    <div className="w-full h-full relative">
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#1a1a1a] ring-1 ring-white/5"></div>
+                    </div>
+                </div>
+                <div className="w-full h-full relative z-10 bg-[#050814] rounded-[2.6rem] overflow-hidden">
+                    {children}
+                </div>
+                <div className="absolute -top-20 -right-20 w-60 h-60 bg-white/10 blur-[50px] rounded-full pointer-events-none z-40 mix-blend-overlay opacity-60"></div>
+                <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-white/5 blur-[50px] rounded-full pointer-events-none z-40 mix-blend-overlay opacity-40"></div>
+                <div className="absolute inset-0 rounded-[3.0rem] ring-1 ring-inset ring-white/5 z-50 pointer-events-none"></div>
+            </div>
+        </div>
+    </div>
+  </div>
+);
+
+/* --- 3. Screen & Data Definitions --- */
+
+const FEATURES = [
+  {
+    id: 'urge',
+    icon: <Timer size={20} className="text-orange-400" />,
+    title: "Ride the Urge",
+    desc: "15-minute timer to help you ride the wave of cravings.",
+    screen: (
+      <div className="flex flex-col h-full bg-[#050814] font-sans relative overflow-hidden">
+        <div className="flex justify-between items-center px-6 pt-8 pb-2 z-20">
+          <span className="text-slate-400 text-xs font-medium cursor-pointer">Cancel</span>
+          <span className="text-slate-400 text-xs font-bold cursor-pointer">Save</span>
+        </div>
+
+        <div className="flex-1 flex flex-col items-center pt-6 relative z-10">
+          
+          <div className="relative w-64 h-64 flex items-center justify-center mb-8">
+            <div className="absolute inset-0 bg-purple-500/10 blur-[60px] rounded-full pointer-events-none"></div>
+            
+            <svg className="w-full h-full transform -rotate-90 drop-shadow-2xl">
+              <circle cx="128" cy="128" r="110" fill="transparent" stroke="#1F2937" strokeWidth="5" />
+              <circle 
+                cx="128" 
+                cy="128" 
+                r="110" 
+                fill="transparent" 
+                stroke="#A855F7" 
+                strokeWidth="5" 
+                strokeDasharray="691" 
+                strokeDashoffset="670" 
+                strokeLinecap="round" 
+                className="drop-shadow-[0_0_15px_rgba(168,85,247,0.6)]"
+              />
+            </svg>
+
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div className="text-slate-600 text-xs font-bold mb-1.5 opacity-40">Day 44</div>
+              <div className="text-[9px] text-slate-400 tracking-[0.25em] font-bold mb-1 uppercase">RIDE THE WAVE</div>
+              <div className="text-[4.5rem] font-bold text-white tabular-nums tracking-tighter mb-2 leading-none">00:12</div>
+              <div className="text-emerald-400 text-[9px] font-bold mt-1">Urges typically pass in 15 minutes.</div>
+              <div className="text-slate-600 text-[9px] font-bold mt-6 opacity-40">Money Saved</div>
+            </div>
+          </div>
+
+          <div className="w-full px-6 opacity-20 pointer-events-none grayscale blur-[1px] absolute bottom-32 left-0">
+             <div className="bg-[#1F2937] p-4 rounded-2xl mb-4 flex items-center justify-between">
+                <div>
+                   <div className="text-xs font-bold text-slate-500">Feeling an urge?</div>
+                   <div className="text-[10px] text-slate-600">Tap here for support</div>
+                </div>
+             </div>
+             <div className="grid grid-cols-3 gap-2">
+                <div className="h-16 bg-[#1F2937] rounded-xl"></div>
+                <div className="h-16 bg-[#1F2937] rounded-xl"></div>
+                <div className="h-16 bg-[#1F2937] rounded-xl"></div>
+             </div>
+          </div>
+
+          <div className="w-full px-6 space-y-3 mt-auto mb-28 z-20">
+            <button className="w-full py-3.5 rounded-full bg-gradient-to-r from-[#8B5CF6] to-[#A855F7] text-white font-bold text-sm shadow-[0_0_25px_rgba(139,92,246,0.25)] border border-white/10 active:scale-[0.98] transition-transform">
+              Urge Defeated
+            </button>
+            <button className="w-full py-3.5 rounded-full bg-[#11141D] text-rose-400 font-bold text-sm border border-white/5 active:scale-[0.98] transition-transform">
+              I Relapsed
+            </button>
+          </div>
+        </div>
+
+        <div className="absolute bottom-5 left-4 right-4 bg-[#131315]/95 backdrop-blur-2xl border border-white/5 rounded-[2rem] px-2 py-3 flex justify-between items-center z-40 shadow-2xl">
+           <div className="flex flex-col items-center justify-center w-12 gap-1 cursor-pointer">
+              <Home size={18} className="text-slate-400" strokeWidth={2} />
+              <span className="text-[9px] font-medium text-slate-400">Home</span>
+           </div>
+           <div className="flex flex-col items-center justify-center w-12 gap-1 cursor-pointer">
+              <BarChart2 size={18} className="text-slate-400" strokeWidth={2} />
+              <span className="text-[9px] font-medium text-slate-400">Progress</span>
+           </div>
+           <div className="flex flex-col items-center justify-center w-12 gap-1 cursor-pointer">
+              <div className="bg-[#8B5CF6] w-9 h-7 rounded-xl flex items-center justify-center shadow-lg">
+                  <Map size={18} className="text-white" strokeWidth={2.5} />
+              </div>
+              <span className="text-[9px] font-bold text-white">Journey</span>
+           </div>
+           <div className="flex flex-col items-center justify-center w-12 gap-1 cursor-pointer">
+              <Briefcase size={18} className="text-slate-400" strokeWidth={2} />
+              <span className="text-[9px] font-medium text-slate-400">Tools</span>
+           </div>
+           <div className="flex flex-col items-center justify-center w-12 gap-1 cursor-pointer">
+              <User size={18} className="text-slate-400" strokeWidth={2} />
+              <span className="text-[9px] font-medium text-slate-400">Profile</span>
+           </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 'finance',
+    icon: <Calculator size={20} className="text-green-400" />,
+    title: "Financial Reality",
+    desc: "Calculate true costs and set savings goals.",
+    screen: (
+      <div className="flex flex-col h-full bg-[#050814] font-sans relative overflow-hidden">
+        <div className="pt-10 pb-4 text-center z-10 w-full">
+           <h3 className="text-white font-bold text-2xl tracking-tight">My Journey</h3>
+           <p className="text-slate-400 text-xs font-medium mt-1">Day 44 of Freedom</p>
+        </div>
+
+        <div className="flex flex-col items-center justify-center mb-8 z-10 relative">
+            <div className="w-36 h-36 rounded-full border-[3px] border-[#1F2937] flex items-center justify-center relative">
+                <svg className="absolute inset-0 w-full h-full transform -rotate-90">
+                    <circle cx="70" cy="70" r="68" fill="transparent" stroke="#8B5CF6" strokeWidth="3" strokeDasharray="427" strokeDashoffset="100" strokeLinecap="round" />
+                </svg>
+                <div className="text-center">
+                    <div className="text-[11px] text-slate-400 font-medium mb-0.5">Day</div>
+                    <div className="text-[44px] font-bold text-white leading-tight">44</div>
+                </div>
+            </div>
+            <div className="text-[11px] text-slate-500 mt-3 font-medium tracking-wide">Today's Progress</div>
+        </div>
+
+        <div className="text-center text-slate-500 text-[10px] font-medium mb-6 z-10 w-full">Friend's Journey</div>
+
+        <div className="grid grid-cols-3 gap-3 px-5 mb-6 z-10 w-full">
+           <div className="bg-[#11141D] rounded-[20px] py-3 px-1 flex flex-col items-center justify-center border border-white/5 h-26 shadow-sm relative">
+              <div className="text-[#A855F7] mb-2.5 drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]">
+                  <Hourglass size={20} strokeWidth={2} />
+              </div>
+              <div className="text-white text-[13px] font-bold mb-1.5 tracking-tight whitespace-nowrap">44d 14h</div>
+              <div className="text-[9px] text-slate-400 font-medium text-center leading-none opacity-80">Clean Time</div>
+           </div>
+           
+           <div className="bg-[#11141D] rounded-[20px] py-3 px-1 flex flex-col items-center justify-center border border-white/5 h-26 shadow-sm relative">
+              <div className="text-[#34D399] mb-2.5 drop-shadow-[0_0_8px_rgba(52,211,153,0.4)]">
+                  <Banknote size={20} strokeWidth={2} />
+              </div>
+              <div className="text-white text-[13px] font-bold mb-1.5 tracking-tight whitespace-nowrap">$2963.98</div>
+              <div className="text-[9px] text-slate-400 font-medium text-center leading-none opacity-80">Money Saved</div>
+           </div>
+           
+           <div className="bg-[#11141D] rounded-[20px] py-3 px-1 flex flex-col items-center justify-center border border-white/5 h-26 shadow-sm relative">
+              <div className="text-[#A855F7] mb-2.5 drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]">
+                  <Brain size={20} strokeWidth={2} />
+              </div>
+              <div className="text-white text-[13px] font-bold mb-1.5 tracking-tight whitespace-nowrap">85%</div>
+              <div className="text-[9px] text-slate-400 font-medium text-center leading-none opacity-80">Focus Level</div>
+           </div>
+        </div>
+
+        <div className="flex-1 px-5 space-y-3 relative z-10 overflow-hidden w-full">
+           <div className="absolute left-[34px] top-4 bottom-0 w-[1px] bg-slate-800/50 z-0"></div>
+
+           <div className="flex items-center gap-4 relative z-10">
+              <div className="w-8 h-8 rounded-full bg-[#111827] border border-white/5 flex items-center justify-center text-emerald-500 shrink-0">
+                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M4 15h13.865a1.5 1.5 0 0 0 1.394-1.055l2.5-8.5a1.5 1.5 0 0 0-1.394-1.945H4v16.5h2V15z"/></svg>
+              </div>
+              <div className="flex-1 bg-[#11141D] rounded-2xl p-3 border border-white/5">
+                 <div className="text-white text-xs font-bold mb-0.5">Decision Made</div>
+                 <div className="text-[9px] text-slate-500">You chose recovery</div>
+              </div>
+           </div>
+
+           <div className="flex items-center gap-4 relative z-10">
+              <div className="w-8 h-8 rounded-full bg-[#111827] border border-white/5 flex items-center justify-center text-emerald-500 shrink-0">
+                 <CheckCircle2 size={12} />
+              </div>
+              <div className="flex-1 bg-[#11141D] rounded-2xl p-3 border border-white/5">
+                 <div className="text-white text-xs font-bold mb-0.5">24 Hours</div>
+                 <div className="text-[9px] text-slate-500">First day clean</div>
+              </div>
+           </div>
+
+           <div className="flex items-center gap-4 relative z-10">
+              <div className="w-8 h-8 rounded-full bg-[#111827] border border-white/5 flex items-center justify-center text-emerald-500 shrink-0 opacity-50">
+                 <Lock size={12} />
+              </div>
+              <div className="flex-1 bg-[#11141D] rounded-2xl p-3 border border-white/5 opacity-50">
+                 <div className="text-white text-xs font-bold mb-0.5">3 Days - The Chemical Reset</div>
+                 <div className="text-[9px] text-slate-500">Your brain is already healing</div>
+              </div>
+           </div>
+        </div>
+
+        <div className="absolute bottom-5 left-4 right-4 bg-[#131315]/95 backdrop-blur-2xl border border-white/5 rounded-[2rem] px-2 py-3 flex justify-between items-center z-40 shadow-2xl">
+           <div className="flex flex-col items-center justify-center w-12 gap-1 cursor-pointer">
+              <Home size={18} className="text-slate-400" strokeWidth={2} />
+              <span className="text-[9px] font-medium text-slate-400">Home</span>
+           </div>
+           <div className="flex flex-col items-center justify-center w-12 gap-1 cursor-pointer">
+              <BarChart2 size={18} className="text-slate-400" strokeWidth={2} />
+              <span className="text-[9px] font-medium text-slate-400">Progress</span>
+           </div>
+           <div className="flex flex-col items-center justify-center w-12 gap-1 cursor-pointer">
+              <div className="bg-[#8B5CF6] w-9 h-7 rounded-xl flex items-center justify-center shadow-lg">
+                  <Map size={18} className="text-white" strokeWidth={2.5} />
+              </div>
+              <span className="text-[9px] font-bold text-white">Journey</span>
+           </div>
+           <div className="flex flex-col items-center justify-center w-12 gap-1 cursor-pointer">
+              <Briefcase size={18} className="text-slate-400" strokeWidth={2} />
+              <span className="text-[9px] font-medium text-slate-400">Tools</span>
+           </div>
+           <div className="flex flex-col items-center justify-center w-12 gap-1 cursor-pointer">
+              <User size={18} className="text-slate-400" strokeWidth={2} />
+              <span className="text-[9px] font-medium text-slate-400">Profile</span>
+           </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 'checkin',
+    icon: <Smile size={20} className="text-blue-400" />,
+    title: "Daily Check-in",
+    desc: "Track your mood and journal your journey.",
+    screen: (
+      <div className="flex flex-col h-full bg-[#050814] font-sans relative overflow-hidden">
+        <div className="flex justify-between items-center px-6 pt-8 pb-2 z-20">
+          <span className="text-slate-400 text-xs font-medium cursor-pointer">Cancel</span>
+          <span className="text-slate-400 text-xs font-bold cursor-pointer">Save</span>
+        </div>
+
+        <div className="flex-1 flex flex-col px-6 pt-10 relative z-10">
+          
+          <div className="text-center mb-10">
+             <h3 className="text-white font-bold text-2xl mb-1 tracking-tight">How are you feeling?</h3>
+             <p className="text-slate-400 text-xs font-medium">Check in with yourself</p>
+          </div>
+
+          <div className="mb-8">
+             <p className="text-slate-400 text-[10px] font-bold mb-3 pl-1">Select your mood</p>
+             <div className="flex justify-between items-end gap-2 h-24">
+                <div className="flex flex-col items-center justify-center gap-2 w-1/5 h-20 rounded-2xl bg-[#1E2536] border border-blue-500/20 text-slate-400 shadow-sm relative top-4">
+                   <div className="w-8 h-8 rounded-full border-2 border-dashed border-slate-500 flex items-center justify-center opacity-80">
+                      <div className="flex gap-0.5">
+                        <div className="w-0.5 h-0.5 bg-slate-500 rounded-full"></div>
+                        <div className="w-0.5 h-0.5 bg-slate-500 rounded-full"></div>
+                      </div>
+                      <div className="absolute w-4 h-4 border-t-2 border-slate-500 rounded-full mt-2 opacity-0"></div> 
+                   </div>
+                   <span className="text-[7px] font-bold whitespace-nowrap tracking-wide">Very Low</span>
+                </div>
+
+                <div className="flex items-center justify-center w-1/5 h-12 rounded-xl bg-[#111623] border border-white/5 text-slate-500 mb-4 shadow-sm">
+                   <span className="text-[8px] font-bold tracking-wide">Low</span>
+                </div>
+
+                <div className="flex items-center justify-center w-1/5 h-12 rounded-xl bg-[#111623] border border-white/5 text-slate-500 mb-4 shadow-sm">
+                   <span className="text-[8px] font-bold tracking-wide">Neutral</span>
+                </div>
+
+                <div className="flex flex-col items-center justify-center gap-2 w-1/5 h-24 rounded-2xl bg-[#1E2536] border border-blue-500/30 text-white relative shadow-[0_0_30px_rgba(59,130,246,0.1)] -top-1">
+                   <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-black shadow-inner">
+                      <Smile size={22} strokeWidth={2.5} />
+                   </div>
+                   <span className="text-[7px] font-bold text-white/90 tracking-wide">Good</span>
+                </div>
+
+                <div className="flex items-center justify-center w-1/5 h-12 rounded-xl bg-[#111623] border border-white/5 text-slate-500 mb-4 shadow-sm">
+                   <span className="text-[8px] font-bold tracking-wide">Great</span>
+                </div>
+             </div>
+          </div>
+
+          <div className="flex-1">
+             <p className="text-slate-400 text-[10px] font-bold mb-3 pl-1">Add a note (optional)</p>
+             <div className="w-full bg-[#11141D] border border-white/5 rounded-2xl p-4 h-32 relative shadow-inner">
+                <p className="text-slate-500 text-xs font-medium leading-relaxed">How are you feeling? What's on your mind?</p>
+                <span className="absolute bottom-3 right-4 text-[9px] text-slate-600 font-medium">0/200</span>
+             </div>
+          </div>
+
+        </div>
+
+        <div className="absolute bottom-5 left-4 right-4 bg-[#131315]/95 backdrop-blur-2xl border border-white/5 rounded-[2rem] px-2 py-3 flex justify-between items-center z-40 shadow-2xl">
+           <div className="flex flex-col items-center justify-center w-12 gap-1 cursor-pointer">
+              <Home size={18} className="text-slate-400" strokeWidth={2} />
+              <span className="text-[9px] font-medium text-slate-400">Home</span>
+           </div>
+           <div className="flex flex-col items-center justify-center w-12 gap-1 cursor-pointer">
+              <BarChart2 size={18} className="text-slate-400" strokeWidth={2} />
+              <span className="text-[9px] font-medium text-slate-400">Progress</span>
+           </div>
+           <div className="flex flex-col items-center justify-center w-12 gap-1 cursor-pointer">
+              <div className="bg-[#8B5CF6] w-9 h-7 rounded-xl flex items-center justify-center shadow-lg">
+                  <Map size={18} className="text-white" strokeWidth={2.5} />
+              </div>
+              <span className="text-[9px] font-bold text-white">Journey</span>
+           </div>
+           <div className="flex flex-col items-center justify-center w-12 gap-1 cursor-pointer">
+              <Briefcase size={18} className="text-slate-400" strokeWidth={2} />
+              <span className="text-[9px] font-medium text-slate-400">Tools</span>
+           </div>
+           <div className="flex flex-col items-center justify-center w-12 gap-1 cursor-pointer">
+              <User size={18} className="text-slate-400" strokeWidth={2} />
+              <span className="text-[9px] font-medium text-slate-400">Profile</span>
+           </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 'analytics',
+    icon: <BarChart2 size={20} className="text-purple-400" />,
+    title: "Analytics",
+    desc: "Track your progress and performance across habits, focus, finance, and routines.",
+    screen: (
+      <div className="h-full analytics-bg p-5 flex flex-col font-sans relative">
+        <div className="text-center mt-6 mb-6">
+            <h3 className="text-white font-bold text-2xl tracking-tight">Analytics</h3>
+            <p className="text-slate-400 text-[10px] font-medium mt-1">Track your progress.</p>
+        </div>
+
+        <div className="flex justify-center mb-6">
+            <div className="bg-[#1F2937] rounded-full p-1 flex">
+                <div className="px-6 py-1.5 bg-[#374151] rounded-full text-[10px] text-white font-semibold shadow-sm">Radar</div>
+                <div className="px-6 py-1.5 text-[10px] text-slate-400 font-medium">Ring</div>
+            </div>
+        </div>
+        
+        <div className="flex-1 flex flex-col items-center">
+            <div className="relative w-48 h-48 mb-8">
+                <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
+                    <polygon points="50,5 90,25 90,75 50,95 10,75 10,25" fill="none" stroke="#1F2937" strokeWidth="1" />
+                    <polygon points="50,20 80,35 80,65 50,80 20,65 20,35" fill="none" stroke="#1F2937" strokeWidth="1" />
+                    <line x1="50" y1="50" x2="50" y2="5" stroke="#1F2937" strokeWidth="1" />
+                    <line x1="50" y1="50" x2="90" y2="25" stroke="#1F2937" strokeWidth="1" />
+                    <line x1="50" y1="50" x2="90" y2="75" stroke="#1F2937" strokeWidth="1" />
+                    <line x1="50" y1="50" x2="50" y2="95" stroke="#1F2937" strokeWidth="1" />
+                    <line x1="50" y1="50" x2="10" y2="75" stroke="#1F2937" strokeWidth="1" />
+                    <line x1="50" y1="50" x2="10" y2="25" stroke="#1F2937" strokeWidth="1" />
+                    
+                    <polygon points="50,30 75,45 80,70 50,75 25,70 30,40" className="radar-polygon" />
+                    
+                    <text x="50" y="52" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">53%</text>
+                    <text x="50" y="62" textAnchor="middle" fill="#64748B" fontSize="6">Score</text>
+                </svg>
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-4 text-[8px] text-slate-400">Impulse</div>
+                <div className="absolute top-[25%] right-0 -mr-6 text-[8px] text-slate-400">Finance</div>
+                <div className="absolute bottom-[25%] right-0 -mr-6 text-[8px] text-slate-400">Emotion</div>
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-4 text-[8px] text-slate-400">Routine</div>
+                <div className="absolute bottom-[25%] left-0 -ml-5 text-[8px] text-slate-400">Focus</div>
+                <div className="absolute top-[25%] left-0 -ml-5 text-[8px] text-slate-400">Social</div>
+            </div>
+
+            <div className="text-[7px] text-slate-500 text-center max-w-[160px] leading-relaxed mb-6 font-medium">
+               Score reflects your habits, urges, check-ins, and savings.
+            </div>
+
+            <div className="w-full bg-[#111827]/50 border border-white/5 rounded-2xl p-4 mb-4 flex items-center justify-between">
+                <div>
+                    <div className="text-[9px] text-slate-500 font-semibold mb-1">Estimated Completion Date</div>
+                    <div className="text-white text-lg font-bold">Mar 22, 2026</div>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                    <Award size={14} />
+                </div>
+            </div>
+        </div>
+
+        <div className="absolute bottom-0 left-0 right-0 border-t border-white/5 bg-[#030712] px-6 py-4 flex justify-between items-center rounded-b-[2.3rem]">
+           <div className="flex flex-col items-center gap-1 bottom-nav-icon active">
+              <BarChart2 size={20} className="text-purple-500" />
+              <span className="text-[8px] font-medium text-purple-500">Analytics</span>
+           </div>
+           <div className="flex flex-col items-center gap-1 bottom-nav-icon">
+              <Home size={20} />
+              <span className="text-[8px] font-medium">Home</span>
+           </div>
+           <div className="flex flex-col items-center gap-1 bottom-nav-icon">
+              <Map size={20} />
+              <span className="text-[8px] font-medium">Journey</span>
+           </div>
+           <div className="flex flex-col items-center gap-1 bottom-nav-icon">
+              <Briefcase size={20} />
+              <span className="text-[8px] font-medium">Tools</span>
+           </div>
+           <div className="flex flex-col items-center gap-1 bottom-nav-icon">
+              <User size={20} />
+              <span className="text-[8px] font-medium">Profile</span>
+           </div>
+        </div>
+      </div>
+    )
+  }
+];
+
+const FAQS = [
+  { q: "What happens if I relapse?", a: "Relapse is part of recovery. BetLess helps you log it without shame, analyze what triggered it, and get back on track immediately. You don't lose all your progress, just your current streak." },
+  { q: "How much does it cost?", a: "BetLess offers a free 1-week trial. After that, Premium is available for $9.99/month or $89.99/year (best value). Cancel anytime." },
+  { 
+    q: "Who should I contact if I have additional questions?", 
+    a: (
+      <span>
+        If you have any questions or concerns about Betless, please contact us via email:{" "}
+        <a 
+          href="mailto:helpbetless@gmail.com" 
+          className="text-[#47B5FF] hover:text-[#A259FF] transition-colors underline decoration-white/20 hover:decoration-[#A259FF]"
+        >
+          helpbetless@gmail.com
+        </a>
+      </span>
+    )
+  }
+];
+
+const TESTIMONIALS = [
+  { quote: "BetLess makes it way easier to stay on track. The panic button saves me every time. It's like having a sponsor in my pocket.", author: "Morgan K.", role: "First Waitlist Member", imgInit: "M" },
+  { quote: "I like the check-in feature. Feels good to track my mood and see patterns. The support is real and judgment-free.", author: "Josh L.", role: "First Waitlist Member", imgInit: "J" },
+  { quote: "The app feels simple and clean. Super easy to use, nothing confusing. Just what I needed to finally quit.", author: "David M.", role: "First Waitlist Member", imgInit: "D" },
+  { quote: "Overall just really helpful. It keeps me focused, makes the urges less overwhelming, and honestly feels like having a financial advisor and therapist in one app.", author: "Sarah T.", role: "First Waitlist Member", imgInit: "S" },
+  { quote: "The streak tracker is actually motivating. Watching the days stack up makes me think twice before I open a betting site. 30 days clean!", author: "Michael R.", role: "First Waitlist Member", imgInit: "M" }
+];
+
+const BENEFITS_LIST = [
+  { icon: <Users size={20} />, t: "Better Relationships", d: "Rebuild trust with loved ones.", color: "text-blue-400", bg: "bg-blue-500/10" },
+  { icon: <TrendingUp size={20} />, t: "Financial Stability", d: "Stop the bleeding. Start growing.", color: "text-emerald-400", bg: "bg-emerald-500/10" },
+  { icon: <Zap size={20} />, t: "Mental Clarity", d: "No more brain fog or constant stress.", color: "text-cyan-400", bg: "bg-cyan-500/10" },
+  { icon: <Award size={20} />, t: "Higher Motivation", d: "Rediscover passions outside of betting.", color: "text-purple-400", bg: "bg-purple-500/10" }, 
+  { icon: <Heart size={20} />, t: "Self Confidence", d: "Believe in yourself again.", color: "text-orange-400", bg: "bg-orange-500/10" }, 
+  { icon: <Shield size={20} />, t: "Regained Control", d: "Take back your time and freedom.", color: "text-red-400", bg: "bg-red-500/10" }, 
+  { icon: <Activity size={20} />, t: "Increased Energy", d: "Wake up ready to seize the day.", color: "text-yellow-400", bg: "bg-yellow-500/10" }, 
+];
+
+const SCROLL_ITEMS = [...BENEFITS_LIST, ...BENEFITS_LIST];
+
+/* --- 4. Page Layout Components --- */
+
+const Navbar = ({ onNavigate }) => {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToSection = (id) => {
+    setMobileMenuOpen(false);
+    if (onNavigate) onNavigate('home');
+    setTimeout(() => {
+       document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
+
+  return (
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${scrolled ? 'bg-[#02030B]/80 backdrop-blur-xl border-b border-white/5 py-4' : 'bg-transparent py-6'}`}>
+      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+        <div className="flex items-center gap-2 cursor-pointer group" onClick={() => onNavigate && onNavigate('home')}>
+          <BrandLogo size="text-xl" />
+        </div>
+
+        <div className="hidden md:flex items-center gap-8">
+          {['Features', 'Stories', 'FAQ'].map((item) => (
+            <button 
+              key={item} 
+              onClick={() => scrollToSection(item.toLowerCase())}
+              className="text-sm font-medium text-slate-300 hover:text-white transition-colors duration-300"
+            >
+              {item}
+            </button>
+          ))}
+          <Button variant="primary" className="!py-2 !px-5 text-sm from-[#47B5FF] to-[#A259FF]" href={STORE_LINKS.apple}>
+            Get the App
+          </Button>
+        </div>
+
+        <button className="md:hidden text-white" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          {mobileMenuOpen ? <X /> : <Menu />}
+        </button>
+      </div>
+
+      {mobileMenuOpen && (
+        <div className="absolute top-full left-0 right-0 bg-[#02030B]/95 backdrop-blur-xl border-b border-white/10 p-6 flex flex-col gap-4 md:hidden animate-fade-slide">
+          {['Features', 'Stories', 'FAQ'].map((item) => (
+            <button 
+              key={item} 
+              onClick={() => scrollToSection(item.toLowerCase())}
+              className="text-left text-lg font-medium text-slate-300 py-2"
+            >
+              {item}
+            </button>
+          ))}
+          <Button variant="primary" className="w-full justify-center from-[#47B5FF] to-[#A259FF]" href={STORE_LINKS.apple}>
+            Get the App
+          </Button>
+        </div>
+      )}
+    </nav>
+  );
+};
+
+const FooterSection = ({ onNavigate }) => {
+  const handleNav = (page) => {
+    if (onNavigate) {
+       onNavigate(page);
+       window.scrollTo(0,0);
+    }
+  };
+
+  return (
+    <footer className="bg-[#02030B] border-t border-white/5 pt-16 pb-8">
+      <div className="max-w-7xl mx-auto px-6">
+        
+        <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
+          
+          {/* Left Side: Brand Only */}
+          <div onClick={() => handleNav('home')} className="cursor-pointer hover:opacity-80 transition-opacity">
+              <BrandLogo size="text-3xl" />
+          </div>
+
+          {/* Right Side: Legal Links */}
+          <div className="flex flex-row items-center gap-8">
+             <button onClick={() => handleNav('privacy')} className="text-slate-400 hover:text-white transition-colors text-sm font-medium hover:underline decoration-white/20 underline-offset-4 whitespace-nowrap">Privacy Policy</button>
+             <button onClick={() => handleNav('terms')} className="text-slate-400 hover:text-white transition-colors text-sm font-medium hover:underline decoration-white/20 underline-offset-4 whitespace-nowrap">Terms of Service</button>
+          </div>
+
+        </div>
+
+        {/* Divider & Copyright */}
+        <div className="border-t border-white/5 pt-8 flex justify-start">
+           <p className="text-slate-600 text-xs font-medium">© Copyright 2026, All rights reserved</p>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+const PrivacyPolicy = ({ onBack }) => (
+    <div className="pt-32 pb-20 px-6 max-w-4xl mx-auto text-slate-300 font-sans animate-fade-slide">
+      <button onClick={onBack} className="mb-8 flex items-center gap-2 text-[#47B5FF] hover:text-[#A259FF] transition-colors">
+        <ChevronLeft size={20} /> Back to Home
+      </button>
+      <h1 className="text-4xl font-bold text-white mb-2">Privacy Policy — BetLess</h1>
+      <p className="text-sm text-slate-500 mb-12">Last Updated: February 2026</p>
+      
+      <div className="space-y-8 leading-relaxed">
+        <p>At BetLess, your privacy is a priority. This Privacy Policy explains how we collect, use, store, and protect your information when you use the BetLess mobile application and website.</p>
+        <p>By accessing or using BetLess, you agree to the practices described in this Privacy Policy.</p>
+
+        <section>
+          <h2 className="text-2xl font-bold text-white mb-4">1. Information We Collect</h2>
+          <p className="mb-4">We collect only the information necessary to provide and improve our services.</p>
+          
+          <h3 className="text-lg font-semibold text-white mb-2">1.1 Personal Information</h3>
+          <ul className="list-disc pl-5 space-y-1 mb-4">
+            <li>Email address (if you create an account)</li>
+            <li>Account-related identifiers</li>
+            <li>Subscription or payment information (processed securely by third-party providers, if applicable)</li>
+          </ul>
+          
+          <h3 className="text-lg font-semibold text-white mb-2">1.2 Recovery & Progress Data (User-Submitted)</h3>
+          <p className="mb-2">Information you voluntarily log related to your recovery journey, including:</p>
+          <ul className="list-disc pl-5 space-y-1 mb-4">
+            <li>Clean time and streaks</li>
+            <li>Urge tracking</li>
+            <li>Mood check-ins</li>
+            <li>Financial recovery data (e.g., money saved)</li>
+            <li>Journal entries and notes</li>
+            <li>Progress metrics and milestones</li>
+          </ul>
+          <p className="mb-4">This data is used only to provide core app functionality, personalization, and insights.</p>
+          
+          <h3 className="text-lg font-semibold text-white mb-2">1.3 Usage Data</h3>
+          <ul className="list-disc pl-5 space-y-1 mb-4">
+              <li>Feature usage</li>
+              <li>Session duration</li>
+              <li>Interaction patterns</li>
+              <li>App performance data</li>
+          </ul>
+
+          <h3 className="text-lg font-semibold text-white mb-2">1.4 Device Information</h3>
+          <ul className="list-disc pl-5 space-y-1 mb-4">
+              <li>Device type</li>
+              <li>Operating system</li>
+              <li>App version</li>
+              <li>IP address</li>
+              <li>Language settings</li>
+          </ul>
+
+          <h3 className="text-lg font-semibold text-white mb-2">1.5 Optional Data</h3>
+          <ul className="list-disc pl-5 space-y-1 mb-4">
+              <li>Feedback you voluntarily provide</li>
+              <li>Support messages</li>
+              <li>Community interactions (if available)</li>
+          </ul>
+        </section>
+        
+        <section>
+           <h2 className="text-2xl font-bold text-white mb-4">2. How We Use Your Information</h2>
+           <p className="mb-2">We use your information to:</p>
+           <ul className="list-disc pl-5 space-y-1 mb-4">
+              <li>Provide, operate, and maintain BetLess</li>
+              <li>Track recovery progress and milestones</li>
+              <li>Personalize the user experience</li>
+              <li>Improve app functionality and performance</li>
+              <li>Provide customer support</li>
+              <li>Communicate important updates</li>
+              <li>Prevent fraud or misuse</li>
+              <li>Comply with legal obligations</li>
+           </ul>
+           <p className="mb-4">We do not use your data for targeted advertising.</p>
+        </section>
+
+        <section>
+           <h2 className="text-2xl font-bold text-white mb-4">3. Data Sharing</h2>
+           <p className="mb-2">We do not sell or rent your personal information. We may share data only in these cases:</p>
+           
+           <h3 className="text-lg font-semibold text-white mb-2">3.1 Service Providers</h3>
+           <p className="mb-2">Trusted third parties that assist with:</p>
+           <ul className="list-disc pl-5 space-y-1 mb-4">
+              <li>Cloud hosting</li>
+              <li>Analytics</li>
+              <li>Payment processing</li>
+              <li>Customer support</li>
+           </ul>
+           <p className="mb-4">All providers are required to protect your data.</p>
+
+           <h3 className="text-lg font-semibold text-white mb-2">3.2 Legal Requirements</h3>
+           <p className="mb-4">When required to comply with applicable laws or lawful requests.</p>
+
+           <h3 className="text-lg font-semibold text-white mb-2">3.3 Business Transfers</h3>
+           <p className="mb-4">If BetLess is involved in a merger, acquisition, or asset sale, your data may be transferred to the new entity.</p>
+        </section>
+
+        <section>
+            <h2 className="text-2xl font-bold text-white mb-4">4. Data Security</h2>
+            <p className="mb-4">We use industry-standard security measures, including encrypted storage and restricted access. However, no system is completely secure, and we cannot guarantee absolute security.</p>
+        </section>
+
+        <section>
+            <h2 className="text-2xl font-bold text-white mb-4">5. Your Rights</h2>
+            <p className="mb-2">Depending on your location, you may have the right to:</p>
+            <ul className="list-disc pl-5 space-y-1 mb-4">
+                <li>Access your data</li>
+                <li>Correct inaccurate data</li>
+                <li>Delete your account and data</li>
+                <li>Restrict certain processing</li>
+                <li>Withdraw consent</li>
+            </ul>
+            <p className="mb-4">Requests can be made at: 📧 <a href="mailto:support@betless.app" className="text-blue-400 hover:text-blue-300">support@betless.app</a></p>
+        </section>
+
+        <section>
+            <h2 className="text-2xl font-bold text-white mb-4">6. Data Retention</h2>
+            <p className="mb-2">We retain your data only as long as necessary to:</p>
+            <ul className="list-disc pl-5 space-y-1 mb-4">
+                <li>Provide our services</li>
+                <li>Maintain your account</li>
+                <li>Meet legal obligations</li>
+            </ul>
+            <p className="mb-4">When your account is deleted, data is securely deleted or anonymized unless required by law.</p>
+        </section>
+
+        <section>
+            <h2 className="text-2xl font-bold text-white mb-4">7. Cookies and Tracking Technologies</h2>
+            <p className="mb-4">BetLess may use cookies or similar technologies to improve performance and user experience. You can manage preferences through your device or browser settings.</p>
+        </section>
+
+        <section>
+            <h2 className="text-2xl font-bold text-white mb-4">8. Third-Party Links</h2>
+            <p className="mb-4">BetLess may contain links to third-party services. We are not responsible for their privacy practices.</p>
+        </section>
+
+        <section>
+            <h2 className="text-2xl font-bold text-white mb-4">9. Children’s Privacy</h2>
+            <p className="mb-4">BetLess is not intended for users under the age of 16. We do not knowingly collect personal information from individuals under 16. If we become aware that such data has been collected, we will delete it promptly.</p>
+        </section>
+
+        <section>
+            <h2 className="text-2xl font-bold text-white mb-4">10. International Data Transfers</h2>
+            <p className="mb-4">Your information may be processed outside your country. Appropriate safeguards are applied.</p>
+        </section>
+
+        <section>
+            <h2 className="text-2xl font-bold text-white mb-4">11. Updates to This Policy</h2>
+            <p className="mb-4">We may update this Privacy Policy from time to time. Significant changes will be communicated through the app or website.</p>
+        </section>
+        
+         <section>
+            <h2 className="text-2xl font-bold text-white mb-4">12. Contact Us</h2>
+            <p className="mb-4">If you have questions about this Privacy Policy, contact: 📧 <a href="mailto:support@betless.app" className="text-blue-400 hover:text-blue-300">support@betless.app</a></p>
+        </section>
+      </div>
+    </div>
+);
+
+const TermsOfService = ({ onBack }) => (
+    <div className="pt-32 pb-20 px-6 max-w-4xl mx-auto text-slate-300 font-sans animate-fade-slide">
+      <button onClick={onBack} className="mb-8 flex items-center gap-2 text-[#47B5FF] hover:text-[#A259FF] transition-colors">
+        <ChevronLeft size={20} /> Back to Home
+      </button>
+      <h1 className="text-4xl font-bold text-white mb-2">Terms of Service — BetLess</h1>
+      <p className="text-sm text-slate-500 mb-12">Last Updated: February 2026</p>
+      
+      <div className="space-y-8 leading-relaxed">
+        <p>Welcome to BetLess, a self-improvement and recovery app designed to help users reduce or quit gambling and build healthier financial and personal habits.</p>
+        <p>By downloading, accessing, or using BetLess, you agree to these Terms of Service. If you do not agree, do not use the app.</p>
+
+        <section>
+          <h2 className="text-2xl font-bold text-white mb-4">1. Acceptance of Terms</h2>
+          <p className="mb-4">By using BetLess, you agree to these Terms of Service and any additional terms related to specific features.</p>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold text-white mb-4">2. Eligibility</h2>
+          <p className="mb-2">You must be at least 17 years old to use BetLess.</p>
+          <p className="mb-4">If you are under 18, you must have permission from a parent or legal guardian.</p>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold text-white mb-4">3. Account Registration</h2>
+          <p className="mb-2">Some features require account creation. You agree to:</p>
+          <ul className="list-disc pl-5 space-y-1 mb-4">
+            <li>Provide accurate information</li>
+            <li>Keep your credentials secure</li>
+            <li>Notify us of unauthorized use</li>
+          </ul>
+          <p className="mb-4">You are responsible for all activity under your account.</p>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold text-white mb-4">4. Use of the App</h2>
+          <p className="mb-2">BetLess provides recovery tracking, educational tools, and self-improvement resources. You agree not to:</p>
+          <ul className="list-disc pl-5 space-y-1 mb-4">
+            <li>Use the app for unlawful purposes</li>
+            <li>Interfere with app functionality</li>
+            <li>Attempt unauthorized access</li>
+            <li>Reverse-engineer or exploit the software</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold text-white mb-4">5. Privacy</h2>
+          <p className="mb-4">Your use of BetLess is governed by our Privacy Policy, which explains how we handle your data.</p>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold text-white mb-4">6. Subscriptions and Billing (If Applicable)</h2>
+          <p className="mb-2">Some features may require a paid subscription. By subscribing, you agree to:</p>
+          <ul className="list-disc pl-5 space-y-1 mb-4">
+            <li>Pay applicable fees</li>
+            <li>Allow recurring billing through your app store</li>
+          </ul>
+          <p className="mb-2 font-bold">Cancellation & Refunds</p>
+          <p className="mb-4">Subscriptions can be canceled through your device’s app store. Refunds follow Apple App Store or Google Play policies.</p>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold text-white mb-4">7. No Medical or Financial Advice</h2>
+          <p className="mb-2">BetLess does not provide medical, psychological, or financial advice. The app is a support tool only.</p>
+          <p className="mb-4">You should seek professional help when appropriate.</p>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold text-white mb-4">8. Disclaimer of Warranties</h2>
+          <p className="mb-2">BetLess is provided “as is” and “as available.” We do not guarantee:</p>
+          <ul className="list-disc pl-5 space-y-1 mb-4">
+            <li>Error-free operation</li>
+            <li>Uninterrupted service</li>
+            <li>Specific results</li>
+          </ul>
+          <p className="mb-4">Individual outcomes vary.</p>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold text-white mb-4">9. Limitation of Liability</h2>
+          <p className="mb-2">To the maximum extent permitted by law, BetLess is not liable for:</p>
+          <ul className="list-disc pl-5 space-y-1 mb-4">
+            <li>Indirect or consequential damages</li>
+            <li>Loss of data or profits</li>
+            <li>Outcomes related to app usage</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold text-white mb-4">10. Community Guidelines (If Applicable)</h2>
+          <p className="mb-2">If community features exist, you agree to:</p>
+          <ul className="list-disc pl-5 space-y-1 mb-4">
+            <li>Respect others</li>
+            <li>Avoid harmful or illegal content</li>
+            <li>Protect privacy</li>
+          </ul>
+          <p className="mb-4">Violations may result in suspension or termination.</p>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold text-white mb-4">11. Intellectual Property</h2>
+          <p className="mb-4">All content, software, and trademarks belong to BetLess or its licensors. You may not copy, distribute, or modify them without permission.</p>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold text-white mb-4">12. Termination</h2>
+          <p className="mb-4">We may suspend or terminate access for violations of these Terms or applicable laws.</p>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold text-white mb-4">13. Changes to These Terms</h2>
+          <p className="mb-4">We may update these Terms periodically. Continued use means acceptance of the updated Terms.</p>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold text-white mb-4">14. Governing Law</h2>
+          <p className="mb-4">These Terms are governed by the laws of the United States and the State of California.</p>
+        </section>
+      </div>
+    </div>
+);
+
+/* --- 5. MAIN APP COMPONENT (REQUIRED) --- */
+
+export default function App() {
+  const [activeFeature, setActiveFeature] = useState(0);
+  const [openFaq, setOpenFaq] = useState(null);
+  const [featureGlow, setFeatureGlow] = useState(false);
+  const [currentPage, setCurrentPage] = useState('home');
+
+  useEffect(() => {
+    setFeatureGlow(true);
+    const timer = setTimeout(() => setFeatureGlow(false), 1000);
+    return () => clearTimeout(timer);
+  }, [activeFeature]);
+
+  // Styles for animations and specific UI components
+  const styleTag = `
+    @keyframes fadeSlide {
+      0% { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(255,255,255,0.05); }
+      50% { transform: scale(1.02); box-shadow: 0 0 25px rgba(255,255,255,0.1); }
+    }
+    @keyframes scrollUp {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-50%); }
+    }
+    .animate-fade-slide {
+      animation: fadeSlide 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+    .animate-pulse-slow {
+      animation: breathe 4s ease-in-out infinite;
+    }
+    .animate-scroll-up {
+      animation: scrollUp 40s linear infinite;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .bottom-nav-icon {
+        color: #94A3B8; 
+        transition: color 0.2s;
+    }
+    .bottom-nav-icon.active {
+        color: #FFFFFF;
+    }
+    .toolbox-bg {
+        background: linear-gradient(to bottom, #111827 0%, #030712 100%);
+    }
+    .analytics-bg {
+        background: linear-gradient(to bottom, #0F172A 0%, #020617 100%);
+    }
+    .tool-card {
+        background-color: rgba(30, 41, 59, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .radar-polygon {
+        fill: rgba(16, 185, 129, 0.2);
+        stroke: #10B981;
+        stroke-width: 1.5;
+    }
+    .money-card-border {
+        border: 1px solid rgba(52, 211, 153, 0.2);
+        background: linear-gradient(180deg, rgba(17, 24, 39, 1) 0%, rgba(5, 8, 20, 1) 100%);
+    }
+    .urge-card-border {
+        border: 1px solid rgba(139, 92, 246, 0.2);
+        background: linear-gradient(180deg, rgba(17, 24, 39, 1) 0%, rgba(5, 8, 20, 1) 100%);
+    }
+    .stat-card-bg {
+        background: linear-gradient(180deg, rgba(31, 41, 55, 0.4) 0%, rgba(17, 24, 39, 0.4) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .nav-blur {
+        backdrop-filter: blur(20px);
+        background: rgba(0, 0, 0, 0.6);
+    }
+  `;
+
+  // Routing Logic
+  if (currentPage === 'privacy') {
+     return (
+       <div className="min-h-screen bg-[#02030B] text-[#B3BDD1] font-sans selection:bg-[#47B5FF]/30 overflow-x-hidden">
+         <style>{styleTag}</style>
+         <Navbar onNavigate={setCurrentPage} /> 
+         <PrivacyPolicy onBack={() => setCurrentPage('home')} />
+         <FooterSection onNavigate={setCurrentPage} />
+       </div>
+     )
+  }
+
+  if (currentPage === 'terms') {
+    return (
+      <div className="min-h-screen bg-[#02030B] text-[#B3BDD1] font-sans selection:bg-[#47B5FF]/30 overflow-x-hidden">
+        <style>{styleTag}</style>
+        <Navbar onNavigate={setCurrentPage} />
+        <TermsOfService onBack={() => setCurrentPage('home')} />
+        <FooterSection onNavigate={setCurrentPage} />
+      </div>
+    )
+  }
+
+  // Main Landing Page
+  return (
+    <div className="min-h-screen bg-[#02030B] text-[#B3BDD1] font-sans selection:bg-[#47B5FF]/30 overflow-x-hidden">
+      <style>{styleTag}</style>
+      
+      {/* Global Background Gradient */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-[#4B1F8F] rounded-full blur-[150px] opacity-20 animate-pulse-slow"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] bg-[#1F6BFF] rounded-full blur-[180px] opacity-10"></div>
+      </div>
+
+      <Navbar onNavigate={setCurrentPage} />
+
+      {/* --- HERO SECTION --- */}
+      <div className="relative z-10 pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+          
+          {/* Hero Left */}
+          <div className="space-y-8 animate-fade-slide">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm shadow-inner transition-transform hover:scale-105 duration-500">
+              <Shield size={14} className="text-[#47B5FF]" />
+              <span className="text-[10px] uppercase tracking-wider font-bold text-slate-300">Built with ex-gamblers & therapists</span>
+            </div>
+            
+            <h1 className="text-5xl lg:text-7xl font-extrabold text-white leading-[1.1] tracking-tight">
+              Quit Gambling.<br />
+              Build Wealth.<br />
+              <GradientText>Live Better.</GradientText>
+            </h1>
+            
+            <p className="text-lg lg:text-xl text-slate-400 max-w-lg leading-relaxed font-light">
+              Meet BetLess, the AI-powered app to quit online gambling. Track your clean streaks, stop urges with a panic button, and see exactly how much money you save.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button variant="store" href={STORE_LINKS.apple}>
+                <div className="text-2xl"><i className="fab fa-apple"></i></div> 
+                <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.5 1.3 0 2.55.88 3.35.88.81 0 2.34-1.08 3.93-.92 1.35.09 2.54.66 3.48 1.63-3.1 1.84-2.6 6.04.57 7.72zM15.02 5.05c.67-1.07 1.12-2.33.84-3.55-1.25.04-2.55.83-3.29 1.7-.66.83-1.04 2.15-.75 3.39 1.24.1 2.54-.53 3.2-1.54z"/></svg>
+                <div className="flex flex-col items-start leading-none">
+                  <span className="text-[10px] uppercase text-slate-400">Download on the</span>
+                  <span className="text-lg font-bold">App Store</span>
+                </div>
+              </Button>
+              <Button variant="store" href={STORE_LINKS.google}>
+                <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.5,12.92 20.16,13.19L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" /></svg>
+                <div className="flex flex-col items-start leading-none">
+                  <span className="text-[10px] uppercase text-slate-400">Get it on</span>
+                  <span className="text-lg font-bold">Google Play</span>
+                </div>
+              </Button>
+            </div>
+          </div>
+          
+          {/* Hero Right - Phone Stack */}
+          <div className="relative h-[700px] w-full flex items-center justify-center perspective-[1200px] scale-95 translate-x-20 -translate-y-5 lg:pl-10">
+             {/* Center Glow */}
+             <div className="absolute inset-0 bg-gradient-to-tr from-[#47B5FF]/10 to-[#A259FF]/10 blur-[100px] rounded-full animate-pulse-slow"></div>
+             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[500px] bg-[#4B1F8F]/40 blur-[90px] rounded-full z-0 pointer-events-none"></div>
+             
+             {/* Phone Left */}
+             <div className="absolute transform -translate-x-52 translate-y-12 -rotate-12 scale-90 opacity-90 z-10 transition-all hover:scale-95 duration-700 ease-out hidden lg:block">
+               <PhoneFrame className="w-[280px]">
+                 <div className="h-full toolbox-bg p-5 flex flex-col font-sans relative">
+                    <div className="text-center mt-6 mb-6">
+                        <h3 className="text-white font-bold text-2xl tracking-tight">Toolbox</h3>
+                        <p className="text-slate-400 text-[10px] uppercase tracking-wide mt-1">Tools for your recovery journey.</p>
+                    </div>
+                    
+                    <div className="flex-1 overflow-y-auto scrollbar-hide space-y-5">
+                        {/* Crisis Support Section */}
+                        <div>
+                            <div className="flex items-center gap-1.5 mb-2.5">
+                                <Heart size={10} className="text-rose-400 fill-rose-400" />
+                                <span className="text-[11px] font-semibold text-slate-300">Crisis Support</span>
+                            </div>
+                            <div className="space-y-2">
+                                <div className="tool-card rounded-xl p-3 flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-400">
+                                        <Clock size={16} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="text-white text-xs font-semibold">Ride the Urge</div>
+                                        <div className="text-slate-500 text-[9px]">15 min timer to ride the wave</div>
+                                    </div>
+                                    <ChevronRight size={14} className="text-slate-600" />
+                                </div>
+                                <div className="tool-card rounded-xl p-3 flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-teal-500/10 flex items-center justify-center text-teal-400">
+                                        <Wind size={16} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="text-white text-xs font-semibold">Breathing Exercise</div>
+                                        <div className="text-slate-500 text-[9px]">4-7-8 technique for calm</div>
+                                    </div>
+                                    <ChevronRight size={14} className="text-slate-600" />
+                                </div>
+                                <div className="tool-card rounded-xl p-3 flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center text-red-400">
+                                        <TriangleAlert size={16} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="text-white text-xs font-semibold">SOS Contact</div>
+                                        <div className="text-slate-500 text-[9px]">One-tap text to your support person</div>
+                                    </div>
+                                    <ChevronRight size={14} className="text-slate-600" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Self-Awareness Section */}
+                        <div>
+                            <div className="flex items-center gap-1.5 mb-2.5">
+                                <div className="w-2 h-2 rounded-full border border-purple-400"></div>
+                                <span className="text-[11px] font-semibold text-slate-300">Self-Awareness</span>
+                            </div>
+                            <div className="tool-card rounded-xl p-3 flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center text-green-400">
+                                    <CheckCircle2 size={16} />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="text-white text-xs font-semibold">Daily Check-In</div>
+                                    <div className="text-slate-500 text-[9px]">Log your mood and progress</div>
+                                </div>
+                                <ChevronRight size={14} className="text-slate-600" />
+                            </div>
+                        </div>
+
+                        {/* Financial Reality Section */}
+                        <div>
+                            <div className="flex items-center gap-1.5 mb-2.5">
+                                <div className="w-2 h-2 rounded-full border border-emerald-400"></div>
+                                <span className="text-[11px] font-semibold text-slate-300">Financial Reality</span>
+                            </div>
+                            <div className="tool-card rounded-xl p-3 flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                                    <DollarSign size={16} />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="text-white text-xs font-semibold">Cost Calculator</div>
+                                    <div className="text-slate-500 text-[9px]">See what gambling costs you</div>
+                                </div>
+                                <Briefcase size={14} className="text-purple-400 ml-auto" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="absolute bottom-0 left-0 right-0 border-t border-white/5 bg-[#030712] px-6 py-4 flex justify-between items-center rounded-b-[2.3rem]">
+                       <div className="flex flex-col items-center gap-1 bottom-nav-icon">
+                          <Home size={20} />
+                          <span className="text-[8px] font-medium">Home</span>
+                       </div>
+                       <div className="flex flex-col items-center gap-1 bottom-nav-icon">
+                          <BarChart2 size={20} />
+                          <span className="text-[8px] font-medium">Progress</span>
+                       </div>
+                       <div className="flex flex-col items-center gap-1 bottom-nav-icon">
+                          <Map size={20} />
+                          <span className="text-[8px] font-medium">Journey</span>
+                       </div>
+                       <div className="flex flex-col items-center gap-1 bottom-nav-icon active">
+                          <Briefcase size={20} className="text-purple-500" />
+                          <span className="text-[8px] font-medium text-purple-500">Tools</span>
+                       </div>
+                       <div className="flex flex-col items-center gap-1 bottom-nav-icon">
+                          <User size={20} />
+                          <span className="text-[8px] font-medium">Profile</span>
+                       </div>
+                    </div>
+                 </div>
+               </PhoneFrame>
+             </div>
+
+             {/* Phone Right */}
+             <div className="absolute transform translate-x-52 translate-y-12 rotate-12 scale-90 opacity-90 z-10 transition-all hover:scale-95 duration-700 ease-out hidden lg:block">
+                <PhoneFrame className="w-[280px]">
+                  <div className="h-full analytics-bg p-5 flex flex-col font-sans relative">
+                    <div className="text-center mt-6 mb-6">
+                        <h3 className="text-white font-bold text-2xl tracking-tight">Analytics</h3>
+                        <p className="text-slate-400 text-[10px] font-medium mt-1">Track your progress.</p>
+                    </div>
+
+                    <div className="flex justify-center mb-8">
+                        <div className="bg-[#1F2937] rounded-full p-1 flex">
+                            <div className="px-6 py-1.5 bg-[#374151] rounded-full text-[10px] text-white font-semibold shadow-sm">Radar</div>
+                            <div className="px-6 py-1.5 text-[10px] text-slate-400 font-medium">Ring</div>
+                        </div>
+                    </div>
+                    
+                    <div className="flex-1 flex flex-col items-center">
+                        <div className="relative w-48 h-48 mb-8">
+                            <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
+                                <polygon points="50,5 90,25 90,75 50,95 10,75 10,25" fill="none" stroke="#1F2937" strokeWidth="1" />
+                                <polygon points="50,20 80,35 80,65 50,80 20,65 20,35" fill="none" stroke="#1F2937" strokeWidth="1" />
+                                <line x1="50" y1="50" x2="50" y2="5" stroke="#1F2937" strokeWidth="1" />
+                                <line x1="50" y1="50" x2="90" y2="25" stroke="#1F2937" strokeWidth="1" />
+                                <line x1="50" y1="50" x2="90" y2="75" stroke="#1F2937" strokeWidth="1" />
+                                <line x1="50" y1="50" x2="50" y2="95" stroke="#1F2937" strokeWidth="1" />
+                                <line x1="50" y1="50" x2="10" y2="75" stroke="#1F2937" strokeWidth="1" />
+                                <line x1="50" y1="50" x2="10" y2="25" stroke="#1F2937" strokeWidth="1" />
+                                
+                                <polygon points="50,30 75,45 65,70 50,85 25,70 30,40" className="radar-polygon" />
+                                <text x="50" y="52" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">51%</text>
+                                <text x="50" y="62" textAnchor="middle" fill="#64748B" fontSize="6">Score</text>
+                            </svg>
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-4 text-[8px] text-slate-400">Progress</div>
+                            <div className="absolute top-[25%] right-0 -mr-6 text-[8px] text-slate-400">Finance</div>
+                            <div className="absolute bottom-[25%] right-0 -mr-6 text-[8px] text-slate-400">Connection</div>
+                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 -mb-4 text-[8px] text-slate-400">Routine</div>
+                            <div className="absolute bottom-[25%] left-0 -ml-6 text-[8px] text-slate-400">Focus</div>
+                            <div className="absolute top-[25%] left-0 -ml-6 text-[8px] text-slate-400">Spirit</div>
+                        </div>
+
+                        <div className="w-full bg-[#111827]/50 border border-white/5 rounded-2xl p-4 mb-4 flex items-center justify-between">
+                            <div>
+                                <div className="text-[9px] text-slate-500 font-semibold mb-1">Estimated Completion Date</div>
+                                <div className="text-white text-lg font-bold">Mar 22, 2026</div>
+                            </div>
+                            <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                                <Award size={14} />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="absolute bottom-0 left-0 right-0 border-t border-white/5 bg-[#030712] px-6 py-4 flex justify-between items-center rounded-b-[2.3rem]">
+                       <div className="flex flex-col items-center gap-1 bottom-nav-icon active">
+                          <BarChart2 size={20} className="text-purple-500" />
+                          <span className="text-[8px] font-medium text-purple-500">Analytics</span>
+                       </div>
+                       <div className="flex flex-col items-center gap-1 bottom-nav-icon">
+                          <Home size={20} />
+                          <span className="text-[8px] font-medium">Home</span>
+                       </div>
+                       <div className="flex flex-col items-center gap-1 bottom-nav-icon">
+                          <Map size={20} />
+                          <span className="text-[8px] font-medium">Journey</span>
+                       </div>
+                       <div className="flex flex-col items-center gap-1 bottom-nav-icon">
+                          <Briefcase size={20} />
+                          <span className="text-[8px] font-medium">Tools</span>
+                       </div>
+                       <div className="flex flex-col items-center gap-1 bottom-nav-icon">
+                          <User size={20} />
+                          <span className="text-[8px] font-medium">Profile</span>
+                       </div>
+                    </div>
+                  </div>
+                </PhoneFrame>
+             </div>
+
+             {/* Center Phone (Home/Day Counter) */}
+             <div className="absolute transform z-20 transition-all duration-700 ease-out hover:scale-105 hover:-translate-y-2 drop-shadow-2xl">
+                <PhoneFrame className="w-[300px]">
+                  <div className="h-full flex flex-col bg-[#050814] font-sans relative p-6">
+                    <div className="mt-6 mb-4 text-left">
+                        <span className="text-white/70 font-medium text-[13px]">BetLess</span>
+                    </div>
+
+                    <div className="flex flex-col items-center justify-center mb-8">
+                        <div className="w-36 h-36 rounded-full border-[3px] border-[#1F2937] flex items-center justify-center relative">
+                            <svg className="absolute inset-0 w-full h-full transform -rotate-90">
+                                <circle cx="70" cy="70" r="68" fill="transparent" stroke="#8B5CF6" strokeWidth="3" strokeDasharray="427" strokeDashoffset="100" strokeLinecap="round" />
+                            </svg>
+                            <div className="text-center">
+                                <div className="text-[11px] text-slate-400 font-medium mb-0.5">Day</div>
+                                <div className="text-[44px] font-bold text-white leading-tight">40</div>
+                            </div>
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-3 font-medium tracking-wide">Today's Progress</div>
+                    </div>
+                    
+                    <div className="bg-[#11141D] rounded-3xl p-5 mb-3 money-card-border relative overflow-hidden">
+                       <div className="flex items-start gap-4 mb-4">
+                          <div className="w-10 h-10 rounded-full bg-[#10B981] flex items-center justify-center text-black shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                             <DollarSign size={20} strokeWidth={3} />
+                          </div>
+                          <div>
+                             <div className="text-3xl font-bold text-white tracking-tight">$0.00</div>
+                             <div className="text-[11px] text-slate-400 font-medium mt-0.5">Money Saved</div>
+                          </div>
+                       </div>
+                       
+                       <div className="w-full h-1.5 bg-[#1F2937] rounded-full overflow-hidden mb-3">
+                          <div className="w-[40%] h-full bg-[#10B981] rounded-full"></div>
+                       </div>
+
+                       <div className="flex justify-between items-center text-[10px] text-slate-500 font-medium">
+                          <div className="flex items-center gap-1.5">
+                             <span className="text-[#34D399]">$35 1d</span> 
+                             <Heart size={10} className="fill-pink-500 text-pink-500" /> 
+                             <span className="text-emerald-400/80">Float Wth</span>
+                          </div>
+                          <span className="text-white">$66</span>
+                       </div>
+                    </div>
+
+                    <div className="bg-[#11141D] rounded-3xl p-5 mb-4 urge-card-border flex items-center justify-between">
+                       <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full bg-[#8B5CF6]/20 flex items-center justify-center text-[#A78BFA]">
+                             <Heart size={20} fill="currentColor" />
+                          </div>
+                          <div>
+                             <div className="text-white text-[13px] font-bold mb-0.5">Feeling an urge?</div>
+                             <div className="text-[10px] text-slate-400 leading-tight">Tap here for 15-min<br/>guided support</div>
+                          </div>
+                       </div>
+                       <ChevronRight size={16} className="text-slate-600" />
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3 mb-2">
+                        <div className="bg-[#11141D] rounded-2xl p-3 flex flex-col items-center justify-center stat-card-bg h-24">
+                            <div className="text-slate-500 mb-2"><BarChart2 size={16} /></div>
+                            <div className="text-white text-lg font-bold mb-0.5">40</div>
+                            <div className="text-[9px] text-slate-500 font-medium">Days Clean</div>
+                        </div>
+                        
+                        <div className="bg-[#11141D] rounded-2xl p-3 flex flex-col items-center justify-center stat-card-bg h-24">
+                            <div className="w-4 h-4 rounded-full bg-[#10B981] flex items-center justify-center text-black mb-2 text-[10px] font-bold">
+                                <Check size={10} strokeWidth={4} />
+                            </div>
+                            <div className="text-white text-lg font-bold mb-0.5">$0.00</div>
+                            <div className="text-[9px] text-[#10B981] font-bold">+ 112</div>
+                        </div>
+                        
+                        <div className="bg-[#11141D] rounded-2xl p-3 flex flex-col items-center justify-center stat-card-bg h-24">
+                            <div className="text-[#A78BFA] mb-2"><Zap size={16} fill="currentColor" /></div>
+                            <div className="text-white text-lg font-bold mb-0.5">27%</div>
+                            <div className="w-8 h-1 bg-[#1F2937] rounded-full overflow-hidden mb-1">
+                                <div className="w-1/3 h-full bg-[#A78BFA]"></div>
+                            </div>
+                            <div className="text-[9px] text-slate-500 font-medium">Focus Strength</div>
+                        </div>
+                    </div>
+                    
+                    <div className="absolute bottom-0 left-0 right-0 nav-blur px-6 py-5 flex justify-between items-end rounded-b-[2.3rem] z-20 border-t border-white/5">
+                       <div className="flex flex-col items-center gap-1.5 cursor-pointer">
+                          <Home size={22} className="text-[#A78BFA]" />
+                          <span className="text-[10px] font-semibold text-[#A78BFA]">Home</span>
+                       </div>
+                       <div className="flex flex-col items-center gap-1.5 cursor-pointer group">
+                          <BarChart2 size={22} className="text-slate-500 group-hover:text-slate-300 transition-colors" />
+                          <span className="text-[10px] font-medium text-slate-500 group-hover:text-slate-300 transition-colors">Progress</span>
+                       </div>
+                       <div className="flex flex-col items-center gap-1.5 cursor-pointer group">
+                          <Map size={22} className="text-slate-500 group-hover:text-slate-300 transition-colors" />
+                          <span className="text-[10px] font-medium text-slate-500 group-hover:text-slate-300 transition-colors">Journey</span>
+                       </div>
+                       <div className="flex flex-col items-center gap-1.5 cursor-pointer group">
+                          <Briefcase size={22} className="text-slate-500 group-hover:text-slate-300 transition-colors" />
+                          <span className="text-[10px] font-medium text-slate-500 group-hover:text-slate-300 transition-colors">Tools</span>
+                       </div>
+                       <div className="flex flex-col items-center gap-1.5 cursor-pointer group">
+                          <User size={22} className="text-slate-500 group-hover:text-slate-300 transition-colors" />
+                          <span className="text-[10px] font-medium text-slate-500 group-hover:text-slate-300 transition-colors">Profile</span>
+                       </div>
+                    </div>
+                  </div>
+                </PhoneFrame>
+             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* --- FEATURE INTERACTIVE --- */}
+      <Section id="features" className="bg-transparent">
+        <div className="grid lg:grid-cols-12 gap-12 items-center">
+          
+          <div className="lg:col-span-5 order-2 lg:order-1 flex justify-center">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-b from-[#47B5FF]/10 to-[#A259FF]/10 blur-[80px] rounded-full opacity-60"></div>
+              <PhoneFrame className="w-[300px] relative z-10 transition-all duration-500 ease-out hover:scale-[1.02]">
+                <div key={activeFeature} className="h-full bg-[#050814] relative">
+                  {FEATURES[activeFeature].screen}
+                </div>
+              </PhoneFrame>
+            </div>
+          </div>
+
+          <div className="lg:col-span-7 order-1 lg:order-2 space-y-8">
+            <div className="mb-8">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">What does BetLess include?</h2>
+              <p className="text-lg text-slate-400 font-light">See how BetLess helps you quit gambling and keep your money.</p>
+            </div>
+
+            <div className="space-y-4">
+              {FEATURES.map((feature, idx) => (
+                <div 
+                  key={feature.id}
+                  onClick={() => setActiveFeature(idx)}
+                  className={`group relative cursor-pointer p-4 rounded-2xl transition-all duration-500 border overflow-hidden ${
+                    activeFeature === idx 
+                      ? 'bg-slate-800/60 border-transparent translate-x-2' 
+                      : 'bg-transparent border-transparent hover:bg-slate-800/30'
+                  }`}
+                >
+                  {activeFeature === idx && (
+                    <div className="absolute inset-0 rounded-2xl p-[1px] bg-gradient-to-r from-[#47B5FF] to-[#A259FF] pointer-events-none -z-10 opacity-70">
+                       <div className="w-full h-full bg-[#090c1a] rounded-2xl"></div>
+                    </div>
+                  )}
+                  
+                  <div className={`absolute inset-0 bg-gradient-to-r from-[#47B5FF]/20 to-[#A259FF]/20 blur-xl transition-opacity duration-1000 pointer-events-none ${activeFeature === idx && featureGlow ? 'opacity-100' : 'opacity-0'}`}></div>
+
+                  <div className="flex items-center gap-4 relative z-10">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-500 ${
+                      activeFeature === idx ? 'bg-slate-700/50 text-white scale-110 shadow-lg' : 'bg-slate-900/50 text-slate-500 group-hover:text-slate-300'
+                    }`}>
+                      {feature.icon}
+                    </div>
+                    <div>
+                      <h3 className={`text-lg font-bold mb-1 transition-colors duration-300 ${activeFeature === idx ? 'text-white' : 'text-slate-300'}`}>
+                        {feature.title}
+                      </h3>
+                      <p className="text-sm text-slate-400 font-light">{feature.desc}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* --- VALUE PROPS --- */}
+      <Section id="why" className="text-center">
+        <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">Why choose BetLess?</h2>
+        <p className="text-slate-400 max-w-2xl mx-auto mb-16 text-lg font-light">BetLess is the most advanced recovery tool for gambling addiction, combining psychology with technology.</p>
+        
+        <div className="grid md:grid-cols-3 gap-8">
+          {[
+            { icon: <Check size={32} />, title: "Stay accountable 24/7", desc: "BetLess tracks your streaks and urges so you always know how you're doing." },
+            { icon: <Shield size={32} />, title: "Protect your money", desc: "See how much you're saving and how many hours you're getting back." },
+            { icon: <Heart size={32} />, title: "Built for real recovery", desc: "Relapse-aware tools: panic button, anonymous community, and education." }
+          ].map((item, i) => (
+            <div 
+              key={i} 
+              className="group p-8 rounded-3xl backdrop-blur-sm border transition-all duration-300 cursor-pointer relative overflow-hidden bg-slate-900/20 border-white/5 hover:bg-slate-800/60 hover:border-[#47B5FF]/50 hover:shadow-[0_0_30px_rgba(71,181,255,0.15)] hover:scale-[1.02]"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-[#47B5FF]/5 to-[#A259FF]/5 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-all duration-300 border shadow-lg relative z-10 bg-gradient-to-br from-slate-800 to-slate-900 text-[#47B5FF] border-white/5 group-hover:bg-gradient-to-br group-hover:from-[#47B5FF]/20 group-hover:to-[#A259FF]/20 group-hover:text-white group-hover:border-[#47B5FF]/40 group-hover:shadow-[0_0_20px_rgba(71,181,255,0.3)] group-hover:scale-110">
+                {item.icon}
+              </div>
+              <h3 className="text-xl font-bold mb-3 transition-colors relative z-10 text-white">{item.title}</h3>
+              <p className="text-slate-400 leading-relaxed font-light relative z-10">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* --- TESTIMONIALS --- */}
+      <Section id="stories">
+        <div className="text-center mb-16 animate-fade-slide">
+           <div className="inline-block px-4 py-1.5 rounded-full bg-slate-800/80 border border-white/10 text-xs font-medium text-slate-300 mb-6 backdrop-blur-sm">Reviews</div>
+           <h2 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight">What People Say About BetLess</h2>
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-6">
+          {TESTIMONIALS.slice(0, 3).map((t, i) => (
+            <div key={i} className="w-full md:w-[calc(33.333%-16px)] flex-grow-0 flex-shrink-0">
+               <div className="h-full bg-[#0A0E1A] border border-white/5 p-8 rounded-[2rem] hover:bg-[#0E1220] transition-colors duration-500 flex flex-col justify-between">
+                  <div>
+                    <p className="text-base text-slate-300 leading-relaxed font-light mb-6">"{t.quote}"</p>
+                    <div className="flex items-center gap-1 mb-6">
+                        {[1,2,3,4,5].map(s => <Star key={s} size={14} className="fill-amber-400 text-amber-400" />)}
+                        <span className="text-white ml-2 text-xs font-bold">5.0</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center text-white font-bold text-sm shadow-inner ring-2 ring-[#0A0E1A]">
+                       {t.imgInit}
+                    </div>
+                    <div>
+                      <div className="text-white font-bold text-sm">{t.author}</div>
+                      <div className="text-slate-500 text-[10px] uppercase tracking-wide font-medium">{t.role}</div>
+                    </div>
+                  </div>
+               </div>
+            </div>
+          ))}
+
+          {TESTIMONIALS.slice(3, 5).map((t, i) => (
+             <div key={i+3} className="w-full md:w-[calc(50%-24px)] max-w-lg flex-grow-0 flex-shrink-0">
+                <div className="h-full bg-[#0A0E1A] border border-white/5 p-8 rounded-[2rem] hover:bg-[#0E1220] transition-colors duration-500 flex flex-col justify-between">
+                   <div>
+                    <p className="text-base text-slate-300 leading-relaxed font-light mb-6">"{t.quote}"</p>
+                    <div className="flex items-center gap-1 mb-6">
+                        {[1,2,3,4,5].map(s => <Star key={s} size={14} className="fill-amber-400 text-amber-400" />)}
+                        <span className="text-white ml-2 text-xs font-bold">5.0</span>
+                    </div>
+                   </div>
+                   <div className="flex items-center gap-3">
+                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center text-white font-bold text-sm shadow-inner ring-2 ring-[#0A0E1A]">
+                        {t.imgInit}
+                     </div>
+                     <div>
+                       <div className="text-white font-bold text-sm">{t.author}</div>
+                       <div className="text-slate-500 text-[10px] uppercase tracking-wide font-medium">{t.role}</div>
+                     </div>
+                   </div>
+                </div>
+             </div>
+          ))}
+        </div>
+
+        <div className="mt-16 flex justify-center">
+            <Button variant="primary" className="!px-10 !py-4 text-lg shadow-[0_10px_40px_rgba(139,92,246,0.3)]" href={STORE_LINKS.apple}>
+                Download
+            </Button>
+        </div>
+      </Section>
+
+      {/* --- BENEFITS SECTION --- */}
+      <Section id="benefits" className="pb-0">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
+          
+          <div className="space-y-8">
+            <h2 className="text-3xl md:text-5xl font-bold text-white leading-tight">Experience life changing benefits</h2>
+            <p className="text-slate-400 text-lg font-light leading-relaxed">Unlock a healthier, more focused, and fulfilling life when you choose sobriety from gambling.</p>
+            <Button variant="primary" href={STORE_LINKS.apple}>
+              Download App
+            </Button>
+          </div>
+
+          <div className="relative h-[450px] overflow-hidden group">
+             <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#02030B] to-transparent z-10 pointer-events-none"></div>
+             <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#02030B] to-transparent z-10 pointer-events-none"></div>
+
+             <div className="animate-scroll-up group-hover:[animation-play-state:paused] space-y-4">
+               {SCROLL_ITEMS.map((b, i) => (
+                 <div 
+                   key={i} 
+                   className="flex items-center gap-5 p-5 rounded-2xl bg-[#0A0E1A] border border-white/5 backdrop-blur-md hover:border-white/10 transition-all duration-300 hover:bg-[#0E1220]"
+                 >
+                   <div className={`${b.color} ${b.bg} p-3 rounded-xl flex items-center justify-center`}>
+                      {b.icon}
+                   </div>
+                   <div>
+                     <div className="text-white font-bold text-base mb-1">{b.t}</div>
+                     <div className="text-slate-400 text-sm font-light">{b.d}</div>
+                   </div>
+                 </div>
+               ))}
+             </div>
+          </div>
+
+        </div>
+      </Section>
+
+      {/* --- FAQ SECTION --- */}
+      <Section id="faq" className="pt-24">
+         <div className="bg-slate-900/20 border border-white/5 rounded-[2.5rem] p-8 md:p-12 backdrop-blur-md max-w-4xl mx-auto">
+           <div className="flex flex-col items-center mb-10 text-center">
+              <div className="px-3 py-1 rounded-full bg-slate-800/50 border border-white/10 text-[10px] text-slate-300 font-bold uppercase tracking-wider mb-3">Help Center</div>
+              <h3 className="text-3xl font-bold text-white">Frequently Asked Questions</h3>
+           </div>
+           
+           <div className="space-y-4">
+             {FAQS.map((faq, i) => (
+               <div key={i} className="border-b border-white/5 last:border-0">
+                 <button 
+                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                   className="w-full flex items-center justify-between py-6 text-left hover:text-white transition-colors duration-300 group focus:outline-none"
+                 >
+                   <span className={`text-lg font-medium transition-colors duration-300 ${openFaq === i ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`}>{faq.q}</span>
+                   <div className={`bg-white/5 rounded-full p-1 transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${openFaq === i ? 'rotate-90 bg-white/10' : ''}`}>
+                     <ChevronRight className={`text-slate-500 ${openFaq === i ? 'text-[#47B5FF]' : ''}`} size={20} />
+                   </div>
+                 </button>
+                 <div 
+                    className={`grid transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${openFaq === i ? 'grid-rows-[1fr] opacity-100 pb-6' : 'grid-rows-[0fr] opacity-0'}`}
+                 >
+                   <div className="overflow-hidden">
+                     <p className="text-base text-slate-400 leading-relaxed font-light">{faq.a}</p>
+                   </div>
+                 </div>
+               </div>
+             ))}
+           </div>
+         </div>
+      </Section>
+
+      {/* --- FINAL CTA --- */}
+      <Section id="download" className="pb-12 pt-0">
+        <div className="relative rounded-[3rem] overflow-hidden p-10 md:p-24 text-center group">
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-900 to-[#050814]"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#47B5FF]/5 to-[#A259FF]/5 opacity-30 group-hover:opacity-50 transition-opacity duration-1000"></div>
+          
+          <div className="relative z-10 max-w-3xl mx-auto space-y-10">
+            <h2 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight leading-tight">
+              Quit Gambling For Life<br />
+              In 30 Days.
+            </h2>
+            <p className="text-lg text-slate-400 font-light max-w-2xl mx-auto">
+              Start your journey with our gambling addiction app and become the best version of yourself. The benefits feel great—trust us.
+              <br/><span className="text-[#47B5FF] font-medium mt-4 block">— The BetLess Team</span>
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
+              <Button variant="store" href={STORE_LINKS.apple}>
+                <div className="text-2xl"><i className="fab fa-apple"></i></div>
+                 <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.5 1.3 0 2.55.88 3.35.88.81 0 2.34-1.08 3.93-.92 1.35.09 2.54.66 3.48 1.63-3.1 1.84-2.6 6.04.57 7.72zM15.02 5.05c.67-1.07 1.12-2.33.84-3.55-1.25.04-2.55.83-3.29 1.7-.66.83-1.04 2.15-.75 3.39 1.24.1 2.54-.53 3.2-1.54z"/></svg>
+                <div className="flex flex-col items-start leading-none">
+                  <span className="text-[10px] uppercase text-slate-400">Download on the</span>
+                  <span className="text-lg font-bold">App Store</span>
+                </div>
+              </Button>
+              <Button variant="store" href={STORE_LINKS.google}>
+                 <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.5,12.92 20.16,13.19L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" /></svg>
+                <div className="flex flex-col items-start leading-none">
+                  <span className="text-[10px] uppercase text-slate-400">Get it on</span>
+                  <span className="text-lg font-bold">Google Play</span>
+                </div>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      <FooterSection onNavigate={setCurrentPage} />
+    </div>
+  );
+}
