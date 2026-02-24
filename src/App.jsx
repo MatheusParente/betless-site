@@ -624,7 +624,6 @@ const FooterSection = ({ onNavigate }) => {
   const handleNav = (page) => {
     if (onNavigate) {
        onNavigate(page);
-       window.scrollTo(0,0);
     }
   };
 
@@ -943,7 +942,37 @@ export default function App() {
   const [activeFeature, setActiveFeature] = useState(0);
   const [openFaq, setOpenFaq] = useState(null);
   const [featureGlow, setFeatureGlow] = useState(false);
-  const [currentPage, setCurrentPage] = useState('home');
+  
+  // NOVA LÓGICA DE NAVEGAÇÃO E URL
+  const [currentPage, setCurrentPage] = useState(() => {
+    const path = window.location.pathname;
+    if (path === '/privacy-policy') return 'privacy';
+    if (path === '/terms-of-service') return 'terms';
+    return 'home';
+  });
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path === '/privacy-policy') setCurrentPage('privacy');
+      else if (path === '/terms-of-service') setCurrentPage('terms');
+      else setCurrentPage('home');
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const handleNavigation = (page) => {
+    setCurrentPage(page);
+    window.scrollTo(0, 0);
+    if (page === 'privacy') {
+      window.history.pushState({}, '', '/privacy-policy');
+    } else if (page === 'terms') {
+      window.history.pushState({}, '', '/terms-of-service');
+    } else {
+      window.history.pushState({}, '', '/');
+    }
+  };
 
   useEffect(() => {
     setFeatureGlow(true);
@@ -1026,9 +1055,9 @@ export default function App() {
      return (
        <div className="min-h-screen bg-[#02030B] text-[#B3BDD1] font-sans selection:bg-[#47B5FF]/30 overflow-x-hidden">
          <style>{styleTag}</style>
-         <Navbar onNavigate={setCurrentPage} /> 
-         <PrivacyPolicy onBack={() => setCurrentPage('home')} />
-         <FooterSection onNavigate={setCurrentPage} />
+         <Navbar onNavigate={handleNavigation} /> 
+         <PrivacyPolicy onBack={() => handleNavigation('home')} />
+         <FooterSection onNavigate={handleNavigation} />
        </div>
      )
   }
@@ -1037,9 +1066,9 @@ export default function App() {
     return (
       <div className="min-h-screen bg-[#02030B] text-[#B3BDD1] font-sans selection:bg-[#47B5FF]/30 overflow-x-hidden">
         <style>{styleTag}</style>
-        <Navbar onNavigate={setCurrentPage} />
-        <TermsOfService onBack={() => setCurrentPage('home')} />
-        <FooterSection onNavigate={setCurrentPage} />
+        <Navbar onNavigate={handleNavigation} />
+        <TermsOfService onBack={() => handleNavigation('home')} />
+        <FooterSection onNavigate={handleNavigation} />
       </div>
     )
   }
@@ -1055,7 +1084,7 @@ export default function App() {
         <div className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] bg-[#1F6BFF] rounded-full blur-[180px] opacity-10"></div>
       </div>
 
-      <Navbar onNavigate={setCurrentPage} />
+      <Navbar onNavigate={handleNavigation} />
 
       {/* --- HERO SECTION --- */}
       <div className="relative z-10 pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
@@ -1662,7 +1691,7 @@ export default function App() {
         </div>
       </Section>
 
-      <FooterSection onNavigate={setCurrentPage} />
+      <FooterSection onNavigate={handleNavigation} />
     </div>
   );
 }
